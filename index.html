@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiyuo Archive Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen p-4 pb-24 select-none">
+
+    <header class="flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
+        <h1 class="text-xl font-black tracking-widest text-white uppercase">KIYUO ARCHIVE</h1>
+        <span class="text-[10px] uppercase font-bold tracking-wider bg-zinc-800 text-zinc-400 px-2.5 py-1 rounded-full border border-zinc-700">
+            ЛІТО 2026
+        </span>
+    </header>
+
+    <div class="grid grid-cols-2 gap-4">
+        
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden flex flex-col justify-between p-3">
+            <div class="w-full aspect-square bg-zinc-800 rounded-xl flex items-center justify-center font-bold text-zinc-600 text-sm tracking-wider uppercase mb-3">
+                [ SNEAKERS ]
+            </div>
+            <div>
+                <h3 class="font-bold text-sm text-zinc-200 tracking-tight">Nike Air Jordan 1 Low</h3>
+                <p class="text-emerald-400 font-semibold text-xs mt-1">6 400 ₴</p>
+                <button onclick="addToCart('Nike Air Jordan 1 Low', 6400)" class="w-full mt-3 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-black py-2.5 rounded-xl transition-all active:scale-95">
+                    У КОШИК
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden flex flex-col justify-between p-3">
+            <div class="w-full aspect-square bg-zinc-800 rounded-xl flex items-center justify-center font-bold text-zinc-600 text-sm tracking-wider uppercase mb-3">
+                [ SNEAKERS ]
+            </div>
+            <div>
+                <h3 class="font-bold text-sm text-zinc-200 tracking-tight">Adidas Campus 00s Black</h3>
+                <p class="text-emerald-400 font-semibold text-xs mt-1">4 200 ₴</p>
+                <button onclick="addToCart('Adidas Campus 00s Black', 4200)" class="w-full mt-3 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-black py-2.5 rounded-xl transition-all active:scale-95">
+                    У КОШИК
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden flex flex-col justify-between p-3">
+            <div class="w-full aspect-square bg-zinc-800 rounded-xl flex items-center justify-center font-bold text-zinc-600 text-sm tracking-wider uppercase mb-3">
+                [ HOODIE ]
+            </div>
+            <div>
+                <h3 class="font-bold text-sm text-zinc-200 tracking-tight">Carhartt WIP Hoodie</h3>
+                <p class="text-emerald-400 font-semibold text-xs mt-1">3 800 ₴</p>
+                <button onclick="addToCart('Carhartt WIP Hoodie', 3800)" class="w-full mt-3 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-black py-2.5 rounded-xl transition-all active:scale-95">
+                    У КОШИК
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden flex flex-col justify-between p-3">
+            <div class="w-full aspect-square bg-zinc-800 rounded-xl flex items-center justify-center font-bold text-zinc-600 text-sm tracking-wider uppercase mb-3">
+                [ DENIM ]
+            </div>
+            <div>
+                <h3 class="font-bold text-sm text-zinc-200 tracking-tight">MM6 Margiela Baggy</h3>
+                <p class="text-emerald-400 font-semibold text-xs mt-1">11 500 ₴</p>
+                <button onclick="addToCart('MM6 Margiela Baggy', 11500)" class="w-full mt-3 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-black py-2.5 rounded-xl transition-all active:scale-95">
+                    У КОШИК
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="order-bar" class="fixed bottom-0 left-0 right-0 p-4 bg-zinc-950/80 backdrop-blur-md border-t border-zinc-800 hidden">
+        <button onclick="sendOrder()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-3.5 rounded-2xl transition-all active:scale-[0.98] text-sm flex justify-between px-5 items-center shadow-lg shadow-emerald-950/50">
+            <span class="uppercase tracking-wider">Оформити замовлення</span>
+            <span id="total-price" class="bg-emerald-600 px-3 py-1 rounded-xl text-xs">0 ₴</span>
+        </button>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand(); // Розгортаємо додаток на весь екран телефону
+
+        let cart = {};
+
+        function addToCart(name, price) {
+            if (cart[name]) {
+                cart[name].count += 1;
+            } else {
+                cart[name] = { price: price, count: 1 };
+            }
+            updateOrderBar();
+        }
+
+        function updateOrderBar() {
+            let total = 0;
+            let itemsCount = 0;
+            
+            for (let key in cart) {
+                total += cart[key].price * cart[key].count;
+                itemsCount += cart[key].count;
+            }
+
+            const orderBar = document.getElementById('order-bar');
+            const totalPriceSpan = document.getElementById('total-price');
+
+            if (itemsCount > 0) {
+                orderBar.classList.remove('hidden');
+                totalPriceSpan.innerText = total.toLocaleString() + " ₴";
+            } else {
+                orderBar.classList.add('hidden');
+            }
+        }
+
+        function sendOrder() {
+            if (Object.keys(cart).length === 0) return;
+
+            let orderData = {
+                items: cart,
+                total_price: document.getElementById('total-price').innerText
+            };
+
+            // Головна магія: відправляємо дані назад у чат з ботом
+            tg.sendData(JSON.stringify(orderData));
+            tg.close(); // Автоматично закриваємо Web App після кліку
+        }
+    </script>
+</body>
+</html>
